@@ -20,7 +20,7 @@ exists($${OUT_PWD}/qgroundcontrol.pro) {
 message(Qt version $$[QT_VERSION])
 
 !contains(CONFIG, DISABLE_QT_VERSION_CHECK) {
-    !equals(QT_MAJOR_VERSION, 6) | !equals(QT_MINOR_VERSION, 6) {
+    !equals(QT_MAJOR_VERSION, 6) | !equals(QT_MINOR_VERSION, 5) {
         error("Unsupported Qt version, 6.6 is required. Found $$QT_MAJOR_VERSION.$$QT_MINOR_VERSION")
     }
 }

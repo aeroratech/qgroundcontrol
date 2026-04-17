@@ -2451,6 +2451,9 @@ void Vehicle::_sendQGCTimeToVehicle()
     cmd.time_unix_usec = QDateTime::currentDateTime().currentMSecsSinceEpoch()*1000;
     // Timestamp of the component clock since boot time in milliseconds (Not necessary).
     cmd.time_boot_ms = 0;
+
+    qCDebug(VehicleLog) << "send QGCTime to Vehicle " << cmd.time_unix_usec;
+
     mavlink_msg_system_time_encode_chan(_mavlink->getSystemId(),
                                         _mavlink->getComponentId(),
                                         sharedLink->mavlinkChannel(),
