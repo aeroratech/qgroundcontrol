@@ -1,0 +1,103 @@
+name: Patch For No Drone Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - patch_for_no_drone
+    paths-ignore:
+      - docs/**
+  pull_request:
+    branches:
+      - patch_for_no_drone
+    paths-ignore:
+      - docs/**
+
+permissions:
+  contents: read
+
+env:
+  SOURCE_DIR: ${{ github.workspace }}
+  QT_VERSION: 6.6.3
+  QT_MODULES: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d
+  BUILD_TYPE: DailyBuild
+  GSTREAMER_WINDOWS_VERSION: 1.18.1
+
+jobs:
+  build:
+    name: Windows
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Get tags for version determination
+        working-directory: ${{ github.workspace }}
+        run: git fetch --all --tags -f --depth 1
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          aqtversion: ==3.1.*
+          host: windows
+          target: desktop
+          arch: win64_msvc2019_64
+          dir: ${{ runner.temp }}
+          modules: ${{ env.QT_MODULES }}
+          setup-python: true
+          cache: true
+
+      - name: Download JOM
+        uses: suisei-cn/actions-download-file@v1.6.0
+        with:
+          url: http://download.qt.io/official_releases/jom/jom.zip
+          target: ${{ runner.temp }}\
+
+      - name: Unzip JOM
+        working-directory: ${{ runner.temp }}
+        run: 7z x jom.zip -ojom
+
+      - name: Download GStreamer runtime
+        uses: suisei-cn/actions-download-file@v1.6.0
+        with:
+          url: https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/gstreamer-1.0-msvc-x86_64-${{ env.GSTREAMER_WINDOWS_VERSION }}.msi
+          target: ${{ runner.temp }}\
+
+      - name: Download GStreamer development files
+        uses: suisei-cn/actions-download-file@v1.6.0
+        with:
+          url: https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/gstreamer-1.0-devel-msvc-x86_64-${{ env.GSTREAMER_WINDOWS_VERSION }}.msi
+          target: ${{ runner.temp }}\
+
+      - name: Install GStreamer
+        run: |
+          cmd /c start /wait msiexec /package ${{ runner.temp }}\gstreamer-1.0-msvc-x86_64-${{ env.GSTREAMER_WINDOWS_VERSION }}.msi /passive ADDLOCAL=ALL
+          cmd /c start /wait msiexec /package ${{ runner.temp }}\gstreamer-1.0-devel-msvc-x86_64-${{ env.GSTREAMER_WINDOWS_VERSION }}.msi /passive ADDLOCAL=ALL
+
+      - name: Set up Visual Studio shell
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Create build directory
+        run: mkdir ${{ runner.temp }}\shadow_build_dir
+
+      - name: Build installer
+        working-directory: ${{ runner.temp }}\shadow_build_dir
+        run: |
+          qmake -r ${{ env.SOURCE_DIR }}\qgroundcontrol.pro CONFIG+=installer CONFIG+=${{ env.BUILD_TYPE }}
+          ${{ runner.temp }}\jom\jom -j2
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: QGroundControl-windows-installer
+          path: ${{ runner.temp }}\shadow_build_dir\staging\QGroundControl-installer.exe
+          if-no-files-found: error

@@ -1,0 +1,96 @@
+name: Patch For No Drone Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - patch_for_no_drone
+    paths-ignore:
+      - docs/**
+  pull_request:
+    branches:
+      - patch_for_no_drone
+    paths-ignore:
+      - docs/**
+
+permissions:
+  contents: read
+
+env:
+  SOURCE_DIR: ${{ github.workspace }}
+  QT_VERSION: 6.6.3
+  QT_MODULES: qtcharts qtlocation qtpositioning qtspeech qt5compat qtmultimedia qtserialport qtimageformats qtshadertools qtconnectivity qtquick3d
+  BUILD_TYPE: DailyBuild
+  GSTREAMER_ANDROID_VERSION: 1.18.6
+  ANDROID_API_LEVEL: 33
+
+jobs:
+  build:
+    name: Android arm64
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Get tags for version determination
+        working-directory: ${{ github.workspace }}
+        run: git fetch --all --tags -f --depth 1
+
+      - name: Install Qt for Android
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          aqtversion: ==3.1.*
+          host: linux
+          target: android
+          arch: android_arm64_v8a
+          extra: --autodesktop
+          dir: ${{ runner.temp }}
+          modules: ${{ env.QT_MODULES }}
+          setup-python: true
+          cache: true
+
+      - name: Use Android SDK platform 33
+        run: |
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_API_LEVEL}"
+          for platform in "${ANDROID_SDK_ROOT}"/platforms/android-*; do
+            [ -d "${platform}" ] || continue
+            platform_name="$(basename "${platform}")"
+            [ "${platform_name}" = "android-${ANDROID_API_LEVEL}" ] && continue
+            ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --uninstall "platforms;${platform_name}" || true
+          done
+          ls -1 "${ANDROID_SDK_ROOT}"/platforms
+
+      - name: Install GStreamer
+        working-directory: ${{ github.workspace }}
+        run: |
+          wget --quiet https://gstreamer.freedesktop.org/data/pkg/android/${GSTREAMER_ANDROID_VERSION}/gstreamer-1.0-android-universal-${GSTREAMER_ANDROID_VERSION}.tar.xz
+          mkdir gstreamer-1.0-android-universal-${GSTREAMER_ANDROID_VERSION}
+          tar xf gstreamer-1.0-android-universal-${GSTREAMER_ANDROID_VERSION}.tar.xz -C gstreamer-1.0-android-universal-${GSTREAMER_ANDROID_VERSION}
+
+      - name: Update android manifest
+        run: ${SOURCE_DIR}/tools/update_android_manifest_package.sh ${{ github.ref_name }}
+
+      - name: Create build directory
+        run: mkdir ${{ runner.temp }}/shadow_build_dir
+
+      - name: Build APK
+        working-directory: ${{ runner.temp }}/shadow_build_dir
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          qmake -r ${SOURCE_DIR}/qgroundcontrol.pro -spec android-clang CONFIG+=${BUILD_TYPE} CONFIG+=installer ANDROID_ABIS="arm64-v8a" QMAKE_CXXFLAGS_WARN_ON+="-Wno-unused-but-set-variable"
+          make -j2
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: QGroundControl64.apk
+          path: ${{ runner.temp }}/shadow_build_dir/package/QGroundControl64.apk
+          if-no-files-found: error
