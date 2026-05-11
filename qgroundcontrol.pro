@@ -31,7 +31,9 @@ TARGET   = QGroundControl
 TEMPLATE = app
 QGCROOT  = $$PWD
 
-QML_IMPORT_PATH += $$PWD/src/QmlControls
+!AndroidBuild {
+    QML_IMPORT_PATH += $$PWD/src/QmlControls
+}
 
 #
 # OS Specific settings
