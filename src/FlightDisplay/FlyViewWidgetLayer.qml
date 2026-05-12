@@ -60,13 +60,13 @@ Item {
         leftEdgeBottomInset:    virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.leftEdgeBottomInset : parentToolInsets.leftEdgeBottomInset
         rightEdgeTopInset:      topRightColumnLayout.rightEdgeTopInset
         rightEdgeCenterInset:   topRightColumnLayout.rightEdgeCenterInset
-        rightEdgeBottomInset:   bottomRightRowLayout.rightEdgeBottomInset
+        rightEdgeBottomInset:   bottomRightRowLayout.visible ? bottomRightRowLayout.rightEdgeBottomInset : 0
         topEdgeLeftInset:       toolStrip.topEdgeLeftInset
         topEdgeCenterInset:     mapScale.topEdgeCenterInset
         topEdgeRightInset:      topRightColumnLayout.topEdgeRightInset
         bottomEdgeLeftInset:    virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.bottomEdgeLeftInset : parentToolInsets.bottomEdgeLeftInset
-        bottomEdgeCenterInset:  bottomRightRowLayout.bottomEdgeCenterInset
-        bottomEdgeRightInset:   virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.bottomEdgeRightInset : bottomRightRowLayout.bottomEdgeRightInset
+        bottomEdgeCenterInset:  bottomRightRowLayout.visible ? bottomRightRowLayout.bottomEdgeCenterInset : 0
+        bottomEdgeRightInset:   virtualJoystickMultiTouch.visible ? virtualJoystickMultiTouch.bottomEdgeRightInset : (bottomRightRowLayout.visible ? bottomRightRowLayout.bottomEdgeRightInset : 0)
     }
 
     FlyViewTopRightColumnLayout {
@@ -84,6 +84,7 @@ Item {
 
     FlyViewBottomRightRowLayout {
         id:                 bottomRightRowLayout
+        visible:            false
         anchors.margins:    _layoutMargin
         anchors.bottom:     parent.bottom
         anchors.right:      parent.right
