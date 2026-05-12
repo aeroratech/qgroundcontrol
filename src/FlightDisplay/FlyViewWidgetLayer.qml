@@ -73,7 +73,7 @@ Item {
         id:                 topRightColumnLayout
         anchors.margins:    _layoutMargin
         anchors.top:        parent.top
-        anchors.bottom:     bottomRightRowLayout.top
+        anchors.bottom:     bottomRightRowLayout.visible ? bottomRightRowLayout.top : parent.bottom
         anchors.right:      parent.right
         spacing:            _layoutSpacing
 

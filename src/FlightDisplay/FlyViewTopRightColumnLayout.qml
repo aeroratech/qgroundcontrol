@@ -51,12 +51,20 @@ ColumnLayout {
     // We use a Loader to load the photoVideoControlComponent only when the active vehicle is not null
     // This make it easier to implement PhotoVideoControl without having to check for the mavlink camera
     // to be null all over the place
-    Loader {
-        id:                 photoVideoControlLoader
-        Layout.alignment:   Qt.AlignVCenter | Qt.AlignRight
-        sourceComponent:    globals.activeVehicle && _showSingleVehicleUI ? photoVideoControlComponent : undefined
+    Item {
+        id:                     photoVideoControlCenter
+        Layout.fillHeight:      true
+        Layout.preferredWidth:  _rightPanelWidth
+        visible:                globals.activeVehicle && _showSingleVehicleUI
 
-        property real rightEdgeCenterInset: visible ? parent.width - x : 0
+        Loader {
+            id:                     photoVideoControlLoader
+            anchors.right:          parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            sourceComponent:        photoVideoControlCenter.visible ? photoVideoControlComponent : undefined
+        }
+
+        property real rightEdgeCenterInset: photoVideoControlLoader.visible ? parent.width - photoVideoControlLoader.x : 0
 
         Component {
             id: photoVideoControlComponent
