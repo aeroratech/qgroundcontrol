@@ -28,6 +28,8 @@ RowLayout {
     property real   _margins:           ScreenTools.defaultFontPixelWidth
     property real   _spacing:           ScreenTools.defaultFontPixelWidth / 2
     property bool   _healthAndArmingChecksSupported: _activeVehicle ? _activeVehicle.healthAndArmingCheckReport.supported : false
+    property var    _camera:            _activeVehicle ? _activeVehicle.cameraManager.currentCameraInstance : null
+    property bool   _cameraReady:       _camera ? (_camera.capturesVideo || _camera.capturesPhotos) : false
 
     QGCMarqueeLabel {
         id:             mainStatusLabel
@@ -37,6 +39,7 @@ RowLayout {
         maxWidth:       ScreenTools.defaultFontPixelWidth * ScreenTools.largeFontPointRatio * 10
 
         property string _commLostText:      qsTr("Communication Lost")
+        property string _readyText:         qsTr("Ready")
         property string _readyToFlyText:    qsTr("Ready To Fly")
         property string _notReadyToFlyText: qsTr("Not Ready")
         property string _disconnectedText:  qsTr("Disconnected - Click to manually connect")
@@ -71,6 +74,9 @@ RowLayout {
                     } else {
                         return mainStatusLabel._armedText
                     }
+                } else if (_cameraReady) {
+                    _mainStatusBGColor = "green"
+                    return mainStatusLabel._readyText
                 } else {
                     if (_healthAndArmingChecksSupported) {
                         if (_activeVehicle.healthAndArmingCheckReport.canArm) {
@@ -367,4 +373,3 @@ RowLayout {
         }
     }
 }
-
