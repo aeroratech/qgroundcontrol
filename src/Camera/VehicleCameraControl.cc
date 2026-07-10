@@ -2421,11 +2421,11 @@ VehicleCameraControl::stopTracking()
                              true);
 
     //-- Stop Sending Tracking Status
-    _vehicle->sendMavCommand(_compID,
-                             MAV_CMD_SET_MESSAGE_INTERVAL,
-                             true,
-                             MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
-                             -1);
+    // _vehicle->sendMavCommand(_compID,
+    //                          MAV_CMD_SET_MESSAGE_INTERVAL,
+    //                          true,
+    //                          MAVLINK_MSG_ID_CAMERA_TRACKING_IMAGE_STATUS,
+    //                          -1);
 
     // reset tracking image rectangle
     _trackingImageRect = {};
