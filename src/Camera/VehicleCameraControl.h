@@ -261,7 +261,8 @@ protected:
     int                                 _version            = 0;
     bool                                _cached             = false;
     bool                                _paramComplete      = false;
-    qreal                               _zoomLevel          = 0.0;
+    qreal                               _zoomLevel          = 1.0;
+    bool                                _resetZoomOnInitialization = true;
     qreal                               _focusLevel         = 0.0;
     uint32_t                            _storageFree        = 0;
     uint32_t                            _storageTotal       = 0;

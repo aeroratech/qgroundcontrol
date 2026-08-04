@@ -1592,9 +1592,17 @@ void VehicleCameraControl::handleCameraSettings(const mavlink_camera_settings_t&
     _setCameraMode(static_cast<CameraMode>(settings.mode_id));
     qreal z = static_cast<qreal>(settings.zoomLevel);
     qreal f = static_cast<qreal>(settings.focusLevel);
+    if(std::isfinite(z)) {
+        z = std::min(std::max(z, 1.0), 100.0);
+    }
     if(std::isfinite(z) && z != _zoomLevel) {
         _zoomLevel = z;
         emit zoomLevelChanged();
+    }
+    if(_resetZoomOnInitialization && std::isfinite(z) && hasZoom()) {
+        // Digital zoom uses a normalized 1-100 range; one is the minimum zoom.
+        _resetZoomOnInitialization = false;
+        setZoomLevel(1.0);
     }
     if(std::isfinite(f) && f != _focusLevel) {
         _focusLevel = f;
