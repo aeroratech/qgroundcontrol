@@ -68,7 +68,7 @@ Rectangle {
                 Layout.fillHeight:  true
                 orientation:        Qt.Vertical
                 to:                 100
-                from:               0
+                from:               1
                 value:              _camera.zoomLevel
                 live:               true
                 onValueChanged:     _camera.zoomLevel = value
