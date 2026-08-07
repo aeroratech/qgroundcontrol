@@ -191,26 +191,5 @@ Item {
                 opacity:        _camera ? (_camera.thermalMode === MavlinkCameraControl.THERMAL_BLEND ? _camera.thermalOpacity / 100 : 1.0) : 0
             }
         }
-        //-- Zoom
-        PinchArea {
-            id:             pinchZoom
-            enabled:        _hasZoom
-            anchors.fill:   parent
-            onPinchStarted: pinchZoom.zoom = 0
-            onPinchUpdated: {
-                if(_hasZoom) {
-                    var z = 0
-                    if(pinch.scale < 1) {
-                        z = Math.round(pinch.scale * -10)
-                    } else {
-                        z = Math.round(pinch.scale)
-                    }
-                    if(pinchZoom.zoom != z) {
-                        _camera.stepZoom(z)
-                    }
-                }
-            }
-            property int zoom: 0
-        }
     }
 }

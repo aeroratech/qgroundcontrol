@@ -566,6 +566,10 @@ VehicleCameraControl::setZoomLevel(qreal level)
     if(hasZoom()) {
         //-- Limit
         level = std::min(std::max(level, 1.0), 100.0);
+        if (fabs(_zoomLevel - level) > 0.01) {
+            _zoomLevel = level;
+            emit zoomLevelChanged();
+        }
         if(_vehicle) {
             _vehicle->sendMavCommand(
                 _compID,                                // Target component
