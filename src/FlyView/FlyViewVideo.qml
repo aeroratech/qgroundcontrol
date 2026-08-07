@@ -87,6 +87,31 @@ Item {
         anchors.fill:               parent
         enabled:                    pipState.state === pipState.fullState
 
+        // Attach to the item that receives Android touch events so the handler
+        // can take over the two points from MouseArea.
+        PinchHandler {
+            id:                 videoPinchHandler
+            target:             null
+            enabled:            videoStreaming._hasZoom
+            grabPermissions:    PointerHandler.CanTakeOverFromItems
+
+            property real startZoomLevel: 1
+
+            onActiveChanged: {
+                if (active && videoStreaming._camera) {
+                    startZoomLevel = Math.max(1, videoStreaming._camera.zoomLevel)
+                }
+            }
+
+            onActiveScaleChanged: {
+                if (videoStreaming._camera) {
+                    // zoomLevel's Q_PROPERTY writer calls VehicleCameraControl::setZoomLevel.
+                    const zoomScale = 1 + (activeScale - 1) * 0.3
+                    videoStreaming._camera.zoomLevel = Math.max(1, Math.min(100, startZoomLevel * zoomScale))
+                }
+            }
+        }
+
         property real _pressX:      0
         property real _pressY:      0
         property bool _dragging:    false

@@ -23,6 +23,7 @@
 #include <QtCore/QDir>
 
 #include <algorithm>
+#include <cmath>
 #include <QtCore/QSettings>
 #include <QtXml/QDomDocument>
 #include <QtXml/QDomNodeList>
@@ -582,7 +583,7 @@ void VehicleCameraControl::setThermalOpacity(double val)
 {
     if(val < 0.0) val = 0.0;
     if(val > 100.0) val = 100.0;
-    if(fabs(_thermalOpacity - val) > 0.1) {
+    if(std::abs(_thermalOpacity - val) > 0.1) {
         _thermalOpacity = val;
         QSettings settings;
         settings.setValue(kThermalOpacity, val);
@@ -595,7 +596,11 @@ void VehicleCameraControl::setZoomLevel(qreal level)
     qCDebug(VehicleCameraControlLog) << "Camera set zoom level to" << level;
     if(hasZoom()) {
         //-- Limit
-        level = std::min(std::max(level, 0.0), 100.0);
+        level = std::clamp(level, 1.0, 100.0);
+        if (std::abs(_zoomLevel - level) > 0.01) {
+            _zoomLevel = level;
+            emit zoomLevelChanged();
+        }
         if(_vehicle) {
             _vehicle->sendMavCommand(
                 _compID,                                // Target component
