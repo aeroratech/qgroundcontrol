@@ -786,14 +786,12 @@ GstVideoReceiver::_makeSource(const QString& uri)
             }
         } else if (isRtsp) {
             if ((source = gst_element_factory_make("rtspsrc", "source")) != nullptr) {
-                // rtspsrc owns its jitter buffer. Bound it so transient Android
-                // decoder stalls cannot accumulate frames and cause periodic
-                // catch-up/freezes in the displayed video.
-                const guint latencyMs = _buffer > 0 ? static_cast<guint>(_buffer) : 80u;
+                // rtspsrc owns its jitter buffer. Live view is latest-frame
+                // only, so do not queue frames for timestamped playback.
                 g_object_set(static_cast<gpointer>(source),
                              "location", qPrintable(uri),
-                             "latency", latencyMs,
-                             "drop-on-latency", _buffer == 0,
+                             "latency", 0u,
+                             "drop-on-latency", TRUE,
                              "udp-reconnect", 1,
                              "timeout", _udpReconnect_us,
                              NULL);
@@ -875,15 +873,14 @@ GstVideoReceiver::_makeSource(const QString& uri)
                     break;
                 }
 
-                // Default GStreamer buffering is unbounded from the live-view
-                // perspective. Keep normal mode resilient to packet reordering,
-                // but cap playout latency and discard stale frames when full.
-                const guint latencyMs = _buffer > 0 ? static_cast<guint>(_buffer) : 80u;
+                // Live view displays only the newest complete frame. Do not
+                // accumulate RTP packets for delayed playback; late packets are
+                // discarded instead of creating a visible catch-up stall.
                 g_object_set(buffer,
-                             "latency", latencyMs,
+                             "latency", 0u,
                              "do-lost", TRUE,
-                             "do-retransmission", latencyMs >= 40u,
-                             "drop-on-latency", _buffer == 0,
+                             "do-retransmission", FALSE,
+                             "drop-on-latency", TRUE,
                              nullptr);
 
                 gst_bin_add(GST_BIN(bin), buffer);
@@ -1183,7 +1180,9 @@ GstVideoReceiver::_addVideoSink(GstPad* pad)
 
     gst_element_sync_state_with_parent(_videoSink);
 
-    g_object_set(_videoSink, "sync", _buffer >= 0, NULL);
+    // Do not wait for the frame PTS. The display is a live preview, so the
+    // newest decoded frame must be rendered immediately.
+    g_object_set(_videoSink, "sync", FALSE, NULL);
 
     GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-with-videosink");
 
