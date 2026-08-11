@@ -132,6 +132,17 @@ GstVideoReceiver::start(const QString& uri, unsigned timeout, int buffer)
             break;
         }
 
+        // This is the live display branch. Never let a temporarily slow decoder or
+        // renderer stall the receiver: keep only the most recent frame and drop
+        // stale ones. The recording branch deliberately keeps the default queue
+        // behaviour so recording still receives every frame.
+        g_object_set(decoderQueue,
+                     "leaky", 2,                 // downstream: discard oldest buffers
+                     "max-size-buffers", 1,
+                     "max-size-bytes", 0,
+                     "max-size-time", G_GUINT64_CONSTANT(0),
+                     nullptr);
+
         if((_decoderValve = gst_element_factory_make("valve", nullptr)) == nullptr)  {
             qCCritical(VideoReceiverLog) << "gst_element_factory_make('valve') failed";
             break;
@@ -775,7 +786,17 @@ GstVideoReceiver::_makeSource(const QString& uri)
             }
         } else if (isRtsp) {
             if ((source = gst_element_factory_make("rtspsrc", "source")) != nullptr) {
-                g_object_set(static_cast<gpointer>(source), "location", qPrintable(uri), "latency", 17, "udp-reconnect", 1, "timeout", _udpReconnect_us, NULL);
+                // rtspsrc owns its jitter buffer. Bound it so transient Android
+                // decoder stalls cannot accumulate frames and cause periodic
+                // catch-up/freezes in the displayed video.
+                const guint latencyMs = _buffer > 0 ? static_cast<guint>(_buffer) : 80u;
+                g_object_set(static_cast<gpointer>(source),
+                             "location", qPrintable(uri),
+                             "latency", latencyMs,
+                             "drop-on-latency", _buffer == 0,
+                             "udp-reconnect", 1,
+                             "timeout", _udpReconnect_us,
+                             NULL);
             }
         } else if(isUdp264 || isUdp265 || isUdpMPEGTS) {
             if ((source = gst_element_factory_make("udpsrc", "source")) != nullptr) {
@@ -853,6 +874,17 @@ GstVideoReceiver::_makeSource(const QString& uri)
                     qCCritical(VideoReceiverLog) << "gst_element_factory_make('rtpjitterbuffer') failed";
                     break;
                 }
+
+                // Default GStreamer buffering is unbounded from the live-view
+                // perspective. Keep normal mode resilient to packet reordering,
+                // but cap playout latency and discard stale frames when full.
+                const guint latencyMs = _buffer > 0 ? static_cast<guint>(_buffer) : 80u;
+                g_object_set(buffer,
+                             "latency", latencyMs,
+                             "do-lost", TRUE,
+                             "do-retransmission", latencyMs >= 40u,
+                             "drop-on-latency", _buffer == 0,
+                             nullptr);
 
                 gst_bin_add(GST_BIN(bin), buffer);
 
