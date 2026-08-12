@@ -340,12 +340,7 @@ Rectangle {
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: {
-                                _camera.trackingEnabled = !_camera.trackingEnabled;
-                                if (!_camera.trackingEnabled) {
-                                    _camera.stopTracking()
-                                }
-                            }
+                            onClicked: _camera.trackingEnabled = !_camera.trackingEnabled
                         }
                     }
                 }
