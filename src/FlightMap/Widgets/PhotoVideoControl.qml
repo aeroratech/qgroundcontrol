@@ -324,7 +324,7 @@ Rectangle {
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     color: _camera.trackingEnabled ? qgcPal.colorRed : qgcPal.windowShadeLight
-                    Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 6
+                    Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 4
                     Layout.preferredHeight: Layout.preferredWidth
                     border.color: qgcPal.buttonText
                     border.width: 3
@@ -348,12 +348,6 @@ Rectangle {
                             }
                         }
                     }
-                }
-
-                QGCLabel {
-                    Layout.alignment: Qt.AlignHCenter
-                    text: qsTr("Camera Tracking")
-                    font.pointSize: ScreenTools.smallFontPointSize
                 }
             }
 
