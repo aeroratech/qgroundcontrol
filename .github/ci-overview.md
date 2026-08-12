@@ -51,7 +51,7 @@ via composite actions and reusable workflows. Python helpers in `scripts/` are i
 | `analysis.yml` | Static analysis |
 | `codeql.yml` | CodeQL security scanning |
 | `pr-checks.yml` | PR validation checks |
-| `release.yml` | Release automation |
+| `release.yml`, `custom-release.yml` | Standard and `_custom` branch/tag release automation |
 | `docs.yml`, `doxygen.yml` | Documentation deployment |
 | `cache-cleanup.yml`, `cache-cleanup-pr.yml`, `_cache-cleanup.yml` | Cache maintenance (reusable + scheduled + PR-triggered) |
 | `crowdin.yml`, `lupdate.yml` | Translation workflows |

@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - 'Stable*'
+      - 'v*_custom'
     tags:
       - 'v*'
     paths-ignore:

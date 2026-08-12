@@ -1,0 +1,68 @@
+name: Custom Release
+
+on:
+  push:
+    branches:
+      - 'v*_custom'
+    tags:
+      - 'v*_custom'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  upload-artifacts:
+    name: Upload Windows and Android Packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Wait for package builds
+        uses: int128/wait-for-workflows-action@v1
+        with:
+          workflow-names: |
+            Windows
+            Android
+          timeout-minutes: 170
+          poll-interval-minutes: 5
+
+      - name: Download Windows and Android packages
+        uses: ./.github/actions/download-all-artifacts
+        with:
+          github-token: ${{ github.token }}
+          head-sha: ${{ github.sha }}
+          workflows: Windows,Android
+          event: push
+          output-dir: artifacts
+          # Android's Linux leg is the signed distribution package. The other
+          # Android host legs are build validation and produce duplicate APKs.
+          artifact-prefixes: QGroundControl-installer-,QGroundControl-linux
+
+      - name: Upload packages to GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.apk
+          fail_on_unmatched_files: true
