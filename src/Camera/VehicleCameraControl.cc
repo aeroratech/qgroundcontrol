@@ -1599,11 +1599,6 @@ void VehicleCameraControl::handleCameraSettings(const mavlink_camera_settings_t&
         _zoomLevel = z;
         emit zoomLevelChanged();
     }
-    if(_resetZoomOnInitialization && std::isfinite(z) && hasZoom()) {
-        // Digital zoom uses a normalized 1-100 range; one is the minimum zoom.
-        _resetZoomOnInitialization = false;
-        setZoomLevel(1.0);
-    }
     if(std::isfinite(f) && f != _focusLevel) {
         _focusLevel = f;
         emit focusLevelChanged();
