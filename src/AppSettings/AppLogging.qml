@@ -256,6 +256,7 @@ Item {
                 QGCComboBox {
                     id: categoryCombo
 
+                    Layout.maximumWidth: ScreenTools.defaultFontPixelWidth * 10
                     model: [qsTr("All Categories")].concat(LogManager.model.categoriesList)
                     sizeToContents: true
 
@@ -279,6 +280,7 @@ Item {
                     ToolTip.visible: hovered
                     checkable: true
                     checked: LogManager.model.filterRegex
+                    visible: false
                     text: qsTr(".*")
 
                     onClicked: LogManager.model.filterRegex = checked
