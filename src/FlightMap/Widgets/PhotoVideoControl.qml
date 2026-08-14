@@ -72,7 +72,7 @@ Rectangle {
             // Photo/Video Mode Selector
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                width: ScreenTools.defaultFontPixelWidth * 10
+                width: ScreenTools.defaultFontPixelWidth * 8
                 height: width / 2
                 color: qgcPal.windowShadeLight
                 radius: height * 0.5
@@ -144,7 +144,7 @@ Rectangle {
                     id: videoCaptureButton
                     Layout.alignment: Qt.AlignHCenter
                     color: videoCaptureButtonPalette.button
-                    width: ScreenTools.defaultFontPixelWidth * 6
+                    width: ScreenTools.defaultFontPixelWidth * 5
                     height: width
                     radius: width * 0.5
                     border.width: 1
@@ -220,7 +220,7 @@ Rectangle {
                     id: photoCaptureButton
                     Layout.alignment: Qt.AlignHCenter
                     color: photoCaptureButtonPalette.button
-                    width: ScreenTools.defaultFontPixelWidth * 6
+                    width: ScreenTools.defaultFontPixelWidth * 5
                     height: width
                     radius: width * 0.5
                     border.width: 1
@@ -290,28 +290,29 @@ Rectangle {
                         text: _activeVehicle ? ('00000' + _activeVehicle.cameraTriggerPoints.count).slice(-5) : "00000"
                     }
                 }
-            }
 
-            //-- Status Information
-            ColumnLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 0
-                visible: true
-
-                QGCLabel {
-                    id: storageStatus
+                //-- Status Information
+                ColumnLayout {
                     Layout.alignment: Qt.AlignHCenter
-                    text: qsTr("Free: ") + _camera.storageFreeStr
-                    font.pointSize: ScreenTools.defaultFontPointSize
-                    visible: _camera.storageStatus === MavlinkCameraControlInterface.STORAGE_READY
-                }
+                    Layout.topMargin: -_smallMargins
+                    spacing: 0
+                    visible: true
 
-                QGCLabel {
-                    id: batteryStatus
-                    Layout.alignment: Qt.AlignHCenter
-                    text: qsTr("Battery: ") + _camera.batteryRemainingStr
-                    font.pointSize: ScreenTools.defaultFontPointSize
-                    visible: _camera.batteryRemaining >= 0
+                    QGCLabel {
+                        id: storageStatus
+                        Layout.alignment: Qt.AlignHCenter
+                        text: qsTr("Free: ") + _camera.storageFreeStr
+                        font.pointSize: ScreenTools.defaultFontPointSize
+                        visible: _camera.storageStatus === MavlinkCameraControlInterface.STORAGE_READY
+                    }
+
+                    QGCLabel {
+                        id: batteryStatus
+                        Layout.alignment: Qt.AlignHCenter
+                        text: qsTr("Battery: ") + _camera.batteryRemainingStr
+                        font.pointSize: ScreenTools.defaultFontPointSize
+                        visible: _camera.batteryRemaining >= 0
+                    }
                 }
             }
 
