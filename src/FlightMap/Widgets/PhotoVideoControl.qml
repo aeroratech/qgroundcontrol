@@ -296,7 +296,7 @@ Rectangle {
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 0
-                visible: storageStatus.visible || batteryStatus.visible
+                visible: true
 
                 QGCLabel {
                     id: storageStatus
