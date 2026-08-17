@@ -1313,11 +1313,11 @@ void VehicleCameraControl::handleParamExtAck(const mavlink_param_ext_ack_t& para
 void VehicleCameraControl::handleParamExtValue(const mavlink_param_ext_value_t& paramExtValue)
 {
     QString paramName = _getParamName(paramExtValue.param_id);
-    qCDebug(VehicleCameraControlLog).noquote() << "Received PARAM_EXT_VALUE:"
-        << "\n\tParam name:" << paramName
-        << "\n\tType:" << static_cast<int>(paramExtValue.param_type)
-        << "\n\tIndex:" << static_cast<int>(paramExtValue.param_index)
-        << "\n\tCount:" << static_cast<int>(paramExtValue.param_count);
+    qCDebug(VehicleCameraControlLog) << "Received PARAM_EXT_VALUE:";
+    qCDebug(VehicleCameraControlLog) << "\tParam name:" << paramName;
+    qCDebug(VehicleCameraControlLog) << "\tType:" << static_cast<int>(paramExtValue.param_type);
+    qCDebug(VehicleCameraControlLog) << "\tIndex:" << static_cast<int>(paramExtValue.param_index);
+    qCDebug(VehicleCameraControlLog) << "\tCount:" << static_cast<int>(paramExtValue.param_count);
 
     if(!_paramIO.contains(paramName)) {
         qCWarning(VehicleCameraControlLog) << "Received PARAM_EXT_VALUE for unknown param:" << paramName;
@@ -1581,10 +1581,10 @@ void VehicleCameraControl::_requestStorageInfo()
 
 void VehicleCameraControl::handleCameraSettings(const mavlink_camera_settings_t& settings)
 {
-    qCDebug(VehicleCameraControlLog).noquote() << "Received CAMERA_SETTINGS - stopping timer, resetting retries:"
-        << "\n\tMode:" << settings.mode_id
-        << "\n\tZoom level:" << settings.zoomLevel
-        << "\n\tFocus level:" << settings.focusLevel;
+    qCDebug(VehicleCameraControlLog) << "Received CAMERA_SETTINGS:";
+    qCDebug(VehicleCameraControlLog) << "\tMode:" << settings.mode_id;
+    qCDebug(VehicleCameraControlLog) << "\tZoom level:" << settings.zoomLevel;
+    qCDebug(VehicleCameraControlLog) << "\tFocus level:" << settings.focusLevel;
 
     _cameraSettingsTimer.stop();
     _cameraSettingsRetries = 0;
@@ -1595,10 +1595,10 @@ void VehicleCameraControl::handleCameraSettings(const mavlink_camera_settings_t&
     if(std::isfinite(z)) {
         z = std::min(std::max(z, 1.0), 100.0);
     }
-    if(std::isfinite(z) && z != _zoomLevel) {
-        _zoomLevel = z;
-        emit zoomLevelChanged();
-    }
+    // if(std::isfinite(z) && z != _zoomLevel) {
+    //     _zoomLevel = z;
+    //     emit zoomLevelChanged();
+    // }
     if(std::isfinite(f) && f != _focusLevel) {
         _focusLevel = f;
         emit focusLevelChanged();
@@ -1607,15 +1607,15 @@ void VehicleCameraControl::handleCameraSettings(const mavlink_camera_settings_t&
 
 void VehicleCameraControl::handleStorageInformation(const mavlink_storage_information_t& storageInformation)
 {
-    qCDebug(VehicleCameraControlLog) << "Received STORAGE_INFORMATION - stopping timer, resetting retries:"
-        << "\n\tStorage id:" << storageInformation.storage_id
-        << "\n\tStorage count:" << storageInformation.storage_count
-        << "\n\tStatus:"<< storageStatusToStr(storageInformation.status)
-        << "\n\tTotal capacity:" << storageInformation.total_capacity
-        << "\n\tUsed capacity:" << storageInformation.used_capacity
-        << "\n\tAvailable capacity:" << storageInformation.available_capacity;
+    qCDebug(VehicleCameraControlLog) << "Received STORAGE_INFORMATION:";
+    qCDebug(VehicleCameraControlLog) << "\tStorage id:" << storageInformation.storage_id;
+    qCDebug(VehicleCameraControlLog) << "\tStorage count:" << storageInformation.storage_count;
+    qCDebug(VehicleCameraControlLog) << "\tStatus:"<< storageStatusToStr(storageInformation.status);
+    qCDebug(VehicleCameraControlLog) << "\tTotal capacity:" << storageInformation.total_capacity;
+    qCDebug(VehicleCameraControlLog) << "\tUsed capacity:" << storageInformation.used_capacity;
+    qCDebug(VehicleCameraControlLog) << "\tAvailable capacity:" << storageInformation.available_capacity;
 
-        _storageInfoTimer.stop();
+    _storageInfoTimer.stop();
     _storageInfoRetries = 0;
 
     if(storageInformation.status == STORAGE_STATUS_READY) {
@@ -1638,8 +1638,8 @@ void VehicleCameraControl::handleStorageInformation(const mavlink_storage_inform
 
 void VehicleCameraControl::handleBatteryStatus(const mavlink_battery_status_t& bs)
 {
-    qCDebug(VehicleCameraControlLog).noquote() << "Received BATTERY_STATUS:"
-        << "\n\tBattery remaining (%):" << bs.battery_remaining;
+    qCDebug(VehicleCameraControlLog) << "Received BATTERY_STATUS:";
+    qCDebug(VehicleCameraControlLog) << "\tBattery remaining (%):" << bs.battery_remaining;
 
     if(bs.battery_remaining >= 0 && _batteryRemaining != static_cast<int>(bs.battery_remaining)) {
         _batteryRemaining = static_cast<int>(bs.battery_remaining);
@@ -1649,12 +1649,12 @@ void VehicleCameraControl::handleBatteryStatus(const mavlink_battery_status_t& b
 
 void VehicleCameraControl::handleCameraCaptureStatus(const mavlink_camera_capture_status_t& cameraCaptureStatus)
 {
-    qCDebug(VehicleCameraControlLog).noquote() << "Received CAMERA_CAPTURE_STATUS - stopping timer, resetting retries:"
-        << "\n\tImage status:" << captureImageStatusToStr(cameraCaptureStatus.image_status)
-        << "\n\tVideo status:" << captureVideoStatusToStr(cameraCaptureStatus.video_status)
-        << "\n\tInterval:" << cameraCaptureStatus.image_interval
-        << "\n\tRecording time (ms):" << cameraCaptureStatus.recording_time_ms
-        << "\n\tCapacity:" << cameraCaptureStatus.available_capacity;
+    qCDebug(VehicleCameraControlLog) << "Received CAMERA_CAPTURE_STATUS:";
+    qCDebug(VehicleCameraControlLog) << "\tImage status:" << captureImageStatusToStr(cameraCaptureStatus.image_status);
+    qCDebug(VehicleCameraControlLog) << "\tVideo status:" << captureVideoStatusToStr(cameraCaptureStatus.video_status);
+    qCDebug(VehicleCameraControlLog) << "\tInterval:" << cameraCaptureStatus.image_interval;
+    qCDebug(VehicleCameraControlLog) << "\tRecording time (ms):" << cameraCaptureStatus.recording_time_ms;
+    qCDebug(VehicleCameraControlLog) << "\tCapacity:" << cameraCaptureStatus.available_capacity;
 
     _captureStatusTimer.stop();
     _cameraCaptureStatusRetries = 0;
@@ -1696,17 +1696,17 @@ void VehicleCameraControl::handleCameraCaptureStatus(const mavlink_camera_captur
 
 void VehicleCameraControl::handleVideoStreamInformation(const mavlink_video_stream_information_t& videoStreamInformation)
 {
-    qCDebug(VehicleCameraControlLog).noquote() << "Received VIDEO_STREAM_INFORMATION:"
-        << "\n\tStream ID:" << videoStreamInformation.stream_id
-        << "\n\tStream count:" << videoStreamInformation.count
-        << "\n\tType:" << static_cast<int>(videoStreamInformation.type)
-        << "\n\tFlags:" << Qt::hex << Qt::showbase << videoStreamInformation.flags << Qt::dec << Qt::noshowbase
-        << "\n\tBitrate (bits/s):" << videoStreamInformation.bitrate
-        << "\n\tFramerate (fps):" << videoStreamInformation.framerate
-        << "\n\tResolution:" << videoStreamInformation.resolution_h << "x" << videoStreamInformation.resolution_v
-        << "\n\tRotation (deg):" << videoStreamInformation.rotation
-        << "\n\tHFOV (deg):" << videoStreamInformation.hfov
-        << "\n\tURI:" << videoStreamInformation.uri;
+    qCDebug(VehicleCameraControlLog) << "Received VIDEO_STREAM_INFORMATION:";
+    qCDebug(VehicleCameraControlLog) << "\tStream ID:" << videoStreamInformation.stream_id;
+    qCDebug(VehicleCameraControlLog) << "\tStream count:" << videoStreamInformation.count;
+    qCDebug(VehicleCameraControlLog) << "\tType:" << static_cast<int>(videoStreamInformation.type);
+    qCDebug(VehicleCameraControlLog) << "\tFlags:" << Qt::hex << Qt::showbase << videoStreamInformation.flags;
+    qCDebug(VehicleCameraControlLog) << "\tBitrate (bits/s):" << videoStreamInformation.bitrate;
+    qCDebug(VehicleCameraControlLog) << "\tFramerate (fps):" << videoStreamInformation.framerate;
+    qCDebug(VehicleCameraControlLog) << "\tResolution:" << videoStreamInformation.resolution_h << "x" << videoStreamInformation.resolution_v;
+    qCDebug(VehicleCameraControlLog) << "\tRotation (deg):" << videoStreamInformation.rotation;
+    qCDebug(VehicleCameraControlLog) << "\tHFOV (deg):" << videoStreamInformation.hfov;
+    qCDebug(VehicleCameraControlLog) << "\tURI:" << videoStreamInformation.uri;
 
     _expectedCount = videoStreamInformation.count;
     if(!_findStream(videoStreamInformation.stream_id, false)) {
@@ -1738,14 +1738,14 @@ void VehicleCameraControl::handleVideoStreamInformation(const mavlink_video_stre
 
 void VehicleCameraControl::handleVideoStreamStatus(const mavlink_video_stream_status_t& videoStreamStatus)
 {
-    qCDebug(VehicleCameraControlLog) << "Received VIDEO_STREAM_STATUS - stopping timer, resetting retries:"
-        << "\n\tStream ID:" << videoStreamStatus.stream_id
-        << "\n\tFlags:" << Qt::hex << Qt::showbase << videoStreamStatus.flags << Qt::dec << Qt::noshowbase
-        << "\n\tBitrate (bits/s):" << videoStreamStatus.bitrate
-        << "\n\tFramerate (fps):" << videoStreamStatus.framerate
-        << "\n\tResolution: " << videoStreamStatus.resolution_h << "x" << videoStreamStatus.resolution_v
-        << "\n\tRotation (deg):" << videoStreamStatus.rotation
-        << "\n\tHFOV (deg):" << videoStreamStatus.hfov;
+    qCDebug(VehicleCameraControlLog) << "Received VIDEO_STREAM_STATUS:";
+    qCDebug(VehicleCameraControlLog) << "\tStream ID:" << videoStreamStatus.stream_id;
+    qCDebug(VehicleCameraControlLog) << "\tFlags:" << Qt::hex << Qt::showbase << videoStreamStatus.flags << Qt::dec << Qt::noshowbase;
+    qCDebug(VehicleCameraControlLog) << "\tBitrate (bits/s):" << videoStreamStatus.bitrate;
+    qCDebug(VehicleCameraControlLog) << "\tFramerate (fps):" << videoStreamStatus.framerate;
+    qCDebug(VehicleCameraControlLog) << "\tResolution: " << videoStreamStatus.resolution_h << "x" << videoStreamStatus.resolution_v;
+    qCDebug(VehicleCameraControlLog) << "\tRotation (deg):" << videoStreamStatus.rotation;
+    qCDebug(VehicleCameraControlLog) << "\tHFOV (deg):" << videoStreamStatus.hfov;
 
     _streamStatusTimer.stop();
     _videoStreamStatusRetries = 0;
@@ -1758,13 +1758,13 @@ void VehicleCameraControl::handleVideoStreamStatus(const mavlink_video_stream_st
 
 void VehicleCameraControl::handleTrackingImageStatus(const mavlink_camera_tracking_image_status_t& trackingImageStatus)
 {
-    qCDebug(VehicleCameraControlLog).noquote() << "Received CAMERA_TRACKING_IMAGE_STATUS:"
-        << "\n\tTracking status:" << static_cast<int>(trackingImageStatus.tracking_status)
-        << "\n\tTracking mode:" << static_cast<int>(trackingImageStatus.tracking_mode)
-        << "\n\tPoint:" << trackingImageStatus.point_x << "," << trackingImageStatus.point_y
-        << "\n\tRectangle:" << trackingImageStatus.rec_top_x << "," << trackingImageStatus.rec_top_y
-        << " -> " << trackingImageStatus.rec_bottom_x << "," << trackingImageStatus.rec_bottom_y
-        << "\n\tRadius:" << trackingImageStatus.radius;
+    qCDebug(VehicleCameraControlLog) << "Received CAMERA_TRACKING_IMAGE_STATUS:";
+    qCDebug(VehicleCameraControlLog) << "\tTracking status:" << static_cast<int>(trackingImageStatus.tracking_status);
+    qCDebug(VehicleCameraControlLog) << "\tTracking mode:" << static_cast<int>(trackingImageStatus.tracking_mode);
+    qCDebug(VehicleCameraControlLog) << "\tPoint:" << trackingImageStatus.point_x << "," << trackingImageStatus.point_y;
+    qCDebug(VehicleCameraControlLog) << "\tRectangle:" << trackingImageStatus.rec_top_x << "," << trackingImageStatus.rec_top_y
+                                     << " -> " << trackingImageStatus.rec_bottom_x << "," << trackingImageStatus.rec_bottom_y;
+    qCDebug(VehicleCameraControlLog) << "\tRadius:" << trackingImageStatus.radius;;
 
     _trackingImageStatus = trackingImageStatus;
 
