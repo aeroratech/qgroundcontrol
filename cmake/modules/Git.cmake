@@ -27,6 +27,54 @@ if(NOT GIT_FOUND OR NOT EXISTS "${CMAKE_SOURCE_DIR}/.git")
     return()
 endif()
 
+# Git metadata is evaluated during CMake configuration. Track the files Git
+# updates for a new commit or checkout so an incremental build reconfigures
+# before packaging the application.
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --git-path HEAD
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_VARIABLE _qgc_git_head_path
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} symbolic-ref --quiet HEAD
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_VARIABLE _qgc_git_head_ref
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+if(_qgc_git_head_ref)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --git-path "${_qgc_git_head_ref}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        OUTPUT_VARIABLE _qgc_git_head_ref_path
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+endif()
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --git-path packed-refs
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_VARIABLE _qgc_git_packed_refs_path
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+foreach(_qgc_git_metadata_path IN ITEMS
+    "${_qgc_git_head_path}"
+    "${_qgc_git_head_ref_path}"
+    "${_qgc_git_packed_refs_path}"
+)
+    if(_qgc_git_metadata_path)
+        cmake_path(ABSOLUTE_PATH _qgc_git_metadata_path BASE_DIRECTORY "${CMAKE_SOURCE_DIR}" NORMALIZE)
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_qgc_git_metadata_path}")
+    endif()
+endforeach()
+unset(_qgc_git_head_path)
+unset(_qgc_git_head_ref)
+unset(_qgc_git_head_ref_path)
+unset(_qgc_git_packed_refs_path)
+
 # Optionally update submodules during configuration
 if(GIT_SUBMODULE)
     message(STATUS "Updating Git submodules...")
