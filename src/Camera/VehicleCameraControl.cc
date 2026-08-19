@@ -593,14 +593,15 @@ void VehicleCameraControl::setThermalOpacity(double val)
 
 void VehicleCameraControl::setZoomLevel(qreal level)
 {
-    qCDebug(VehicleCameraControlLog) << "Camera set zoom level to" << level;
+    //-- Limit
+    level = std::clamp(level, 1.0, 100.0);
+    level = std::round(level * 10.0) / 10.0;
     if(hasZoom()) {
-        //-- Limit
-        level = std::clamp(level, 1.0, 100.0);
-        if (std::abs(_zoomLevel - level) > 0.01) {
-            _zoomLevel = level;
-            emit zoomLevelChanged();
+        if (std::abs(_zoomLevel - level) < 0.09) {
+            return;
         }
+        _zoomLevel = level;
+        emit zoomLevelChanged();
         if(_vehicle) {
             _vehicle->sendMavCommand(
                 _compID,                                // Target component
@@ -609,6 +610,7 @@ void VehicleCameraControl::setZoomLevel(qreal level)
                 ZOOM_TYPE_RANGE,                        // Zoom type
                 static_cast<float>(level));             // Level
         }
+        qCDebug(VehicleCameraControlLog) << "Camera set zoom level to" << level;
     }
 }
 
