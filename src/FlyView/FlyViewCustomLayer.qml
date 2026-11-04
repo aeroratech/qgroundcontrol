@@ -1,41 +1,37 @@
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Dialogs
-import QtQuick.Layouts
-
-import QtLocation
-import QtPositioning
-import QtQuick.Window
-import QtQml.Models
-
 import QGroundControl
 import QGroundControl.Controls
 import QGroundControl.FlyView
-import QGroundControl.FlightMap
+import QGroundControl.Taisync 1.0
 
-// To implement a custom overlay copy this code to your own control in your custom code source. Then override the
-// FlyViewCustomLayer.qml resource with your own qml. See the custom example and documentation for details.
 Item {
     id: _root
 
-    property var parentToolInsets               // These insets tell you what screen real estate is available for positioning the controls in your overlay
-    property var totalToolInsets:   _toolInsets // These are the insets for your custom overlay additions
+    property var parentToolInsets               // Insets from the parent FlyViewWidgetLayer
+    property var totalToolInsets: _totalToolInsets // Returned insets including our custom HUD
     property var mapControl
 
-    // since this file is a placeholder for the custom layer in a standard build, we will just pass through the parent insets
+    TaisyncStatusPanel {
+        id: taisyncPanel
+        anchors.top: parent.top
+        anchors.topMargin: _root.parentToolInsets.topEdgeLeftInset + ScreenTools.defaultFontPixelHeight
+        anchors.left: parent.left
+        anchors.leftMargin: _root.parentToolInsets.leftEdgeTopInset + ScreenTools.defaultFontPixelWidth
+    }
+
     QGCToolInsets {
-        id:                     _toolInsets
-        leftEdgeTopInset:       parentToolInsets.leftEdgeTopInset
-        leftEdgeCenterInset:    parentToolInsets.leftEdgeCenterInset
-        leftEdgeBottomInset:    parentToolInsets.leftEdgeBottomInset
-        rightEdgeTopInset:      parentToolInsets.rightEdgeTopInset
-        rightEdgeCenterInset:   parentToolInsets.rightEdgeCenterInset
-        rightEdgeBottomInset:   parentToolInsets.rightEdgeBottomInset
-        topEdgeLeftInset:       parentToolInsets.topEdgeLeftInset
-        topEdgeCenterInset:     parentToolInsets.topEdgeCenterInset
-        topEdgeRightInset:      parentToolInsets.topEdgeRightInset
-        bottomEdgeLeftInset:    parentToolInsets.bottomEdgeLeftInset
-        bottomEdgeCenterInset:  parentToolInsets.bottomEdgeCenterInset
-        bottomEdgeRightInset:   parentToolInsets.bottomEdgeRightInset
+        id: _totalToolInsets
+        leftEdgeTopInset:       _root.parentToolInsets.leftEdgeTopInset
+        leftEdgeCenterInset:    _root.parentToolInsets.leftEdgeCenterInset
+        leftEdgeBottomInset:    _root.parentToolInsets.leftEdgeBottomInset
+        rightEdgeTopInset:      _root.parentToolInsets.rightEdgeTopInset
+        rightEdgeCenterInset:   _root.parentToolInsets.rightEdgeCenterInset
+        rightEdgeBottomInset:   _root.parentToolInsets.rightEdgeBottomInset
+        topEdgeLeftInset:       taisyncPanel.y + taisyncPanel.height
+        topEdgeCenterInset:     _root.parentToolInsets.topEdgeCenterInset
+        topEdgeRightInset:      _root.parentToolInsets.topEdgeRightInset
+        bottomEdgeLeftInset:    _root.parentToolInsets.bottomEdgeLeftInset
+        bottomEdgeCenterInset:  _root.parentToolInsets.bottomEdgeCenterInset
+        bottomEdgeRightInset:   _root.parentToolInsets.bottomEdgeRightInset
     }
 }

@@ -302,9 +302,9 @@ qt_add_executable(${CMAKE_PROJECT_NAME}
     ${QGC_RESOURCES}
 )
 
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
-    ADDITIONAL_CLEAN_FILES "${CMAKE_BINARY_DIR}/ccache-launcher"
-)
+# set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+#    ADDITIONAL_CLEAN_FILES "${CMAKE_BINARY_DIR}/ccache-launcher"
+# )
 
 include(Sanitizers)
 

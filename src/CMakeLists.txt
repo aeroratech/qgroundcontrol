@@ -143,6 +143,9 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         QGroundControlModule
         ToolbarModule
         VehicleSetupModule
+
+        # Aerora Add-ons
+        TaisyncModule
 )
 
 # ----------------------------------------------------------------------------

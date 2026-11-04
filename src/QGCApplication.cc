@@ -1,5 +1,8 @@
 #include "QGCApplication.h"
 
+#include "TaisyncStatusManager.h"
+#include <QQmlEngine>
+
 #include <QtCore/QEvent>
 #include <QtCore/QFile>
 #include <QtCore/QMetaMethod>
@@ -45,6 +48,8 @@
 #ifndef QGC_NO_SERIAL_LINK
 #include "SerialLink.h"
 #endif
+
+extern void qml_register_types_QGroundControl_Taisync();
 
 QGC_LOGGING_CATEGORY(QGCApplicationLog, "API.QGCApplication")
 QGC_LOGGING_CATEGORY(QGCAppMessageLog, "API.QGCApplication.AppMessage")
@@ -227,6 +232,9 @@ QGCApplication::~QGCApplication() {}
 
 void QGCApplication::init()
 {
+    // Register cusstom static QML modules BEFORE the QML engine loads the UI
+    qml_register_types_QGroundControl_Taisync(); // Taisync radio
+
     SettingsManager::instance()->init();
     if (_systemId > 0) {
         qCDebug(QGCApplicationLog) << "Setting MAVLink System ID to:" << _systemId;

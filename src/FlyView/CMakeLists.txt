@@ -9,6 +9,8 @@ qt_add_qml_module(FlyViewModule
     URI QGroundControl.FlyView
     VERSION 1.0
     RESOURCE_PREFIX /qml
+    IMPORTS
+            QGroundControl.Taisync
     QML_FILES
         CustomGuidedActionsController.qml
         DefaultChecklist.qml
@@ -65,6 +67,7 @@ qt_add_qml_module(FlyViewModule
         ProximityRadarVideoView.qml
         RoverChecklist.qml
         SubChecklist.qml
+        TaisyncStatusPanel.qml
         TelemetryValuesBar.qml
         TerrainProgress.qml
         VehicleWarnings.qml

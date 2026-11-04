@@ -34,7 +34,11 @@ qt_add_resources(${CMAKE_PROJECT_NAME} json_comm
     FILES USBBoardInfo.json
 )
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/Taisync
+)
 
 # Uncomment to enable Qt socket debugging
 # target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE QABSTRACTSOCKET_DEBUG)
@@ -73,3 +77,9 @@ add_subdirectory(Bluetooth)
 # ============================================================================
 
 add_subdirectory(MockLink)
+
+# ============================================================================
+# Taisync Radio Communication & Stats
+# ============================================================================
+
+add_subdirectory(Taisync)
