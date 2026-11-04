@@ -12,11 +12,10 @@ Item {
     property var mapControl
 
     TaisyncStatusPanel {
-        id: taisyncPanel
-        anchors.top: parent.top
-        anchors.topMargin: _root.parentToolInsets.topEdgeLeftInset + ScreenTools.defaultFontPixelHeight
         anchors.left: parent.left
-        anchors.leftMargin: _root.parentToolInsets.leftEdgeTopInset + ScreenTools.defaultFontPixelWidth
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth * 1.5
+        anchors.bottomMargin: ScreenTools.defaultFontPixelHeight * 1.5
     }
 
     QGCToolInsets {

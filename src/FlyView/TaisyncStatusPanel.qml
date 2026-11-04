@@ -18,24 +18,41 @@ Rectangle {
     ColumnLayout {
         id: mainLayout
         anchors.centerIn: parent
-        spacing: ScreenTools.defaultFontPixelHeight * 0.25
+        spacing: ScreenTools.defaultFontPixelHeight * 0.4
 
         QGCLabel {
-            text: "TAISYNC: " + TaisyncRadio.linkStatus + " (" + TaisyncRadio.linkQuality + "%)"
+            text: "TAISYNC"
             font.bold: true
             color: "white"
+            Layout.alignment: Qt.AlignHCenter
         }
-        QGCLabel {
-            text: "GND SNR: " + TaisyncRadio.groundSnr + " dB | AIR SNR: " + TaisyncRadio.airSnr + " dB"
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
             color: "white"
+            opacity: 0.3
         }
+
         QGCLabel {
-            text: "GND RSSI: " + TaisyncRadio.groundRssi0 + " / " + TaisyncRadio.groundRssi1 + " dBm"
-            color: "white"
+            text: TaisyncRadio.linkStatus + " (" + TaisyncRadio.linkQuality + "%)"
+            color: TaisyncRadio.connected ? "#00E676" : "#FF5252"
+            font.bold: true
+            Layout.alignment: Qt.AlignHCenter
         }
+
+        QGCLabel { text: "<b>SNR:</b> " + TaisyncRadio.groundSnr + " | " + TaisyncRadio.airSnr; color: "white" }
+        QGCLabel { text: "<b>RSSI:</b> " + TaisyncRadio.groundRssi0 + "/" + TaisyncRadio.groundRssi1; color: "white" }
+        QGCLabel { text: "<b>UL:</b> " + TaisyncRadio.uplinkRate; color: "white" }
+        QGCLabel { text: "<b>DL:</b> " + TaisyncRadio.downlinkRate; color: "white" }
+        QGCLabel { text: "<b>Freq:</b> " + TaisyncRadio.txFreq; color: "white" }
+
         QGCLabel {
-            text: "MCS: " + TaisyncRadio.mcs + " | UL/DL: " + TaisyncRadio.uplinkRate + "/" + TaisyncRadio.downlinkRate
+            text: TaisyncRadio.mcs
             color: "white"
+            font.pointSize: ScreenTools.smallFontPointSize
+            Layout.maximumWidth: ScreenTools.defaultFontPixelWidth * 12
+            wrapMode: Text.Wrap
         }
     }
 }

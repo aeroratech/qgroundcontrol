@@ -1,11 +1,9 @@
 #pragma once
 
 #include <QObject>
-#include <QTimer>
+#include <QProcess>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 #include <QtQmlIntegration/qqmlintegration.h>
 
 class TaisyncStatusManager : public QObject
@@ -25,11 +23,10 @@ class TaisyncStatusManager : public QObject
     Q_PROPERTY(QString mcs READ mcs NOTIFY metricsChanged)
     Q_PROPERTY(QString uplinkRate READ uplinkRate NOTIFY metricsChanged)
     Q_PROPERTY(QString downlinkRate READ downlinkRate NOTIFY metricsChanged)
+    Q_PROPERTY(QString txFreq READ txFreq NOTIFY metricsChanged)
 
 public:
     explicit TaisyncStatusManager(QObject *parent = nullptr);
-
-    Q_INVOKABLE void setRadioIp(const QString &ip);
 
     bool connected() const { return _connected; }
     QString linkStatus() const { return _linkStatus; }
@@ -43,20 +40,19 @@ public:
     QString mcs() const { return _mcs; }
     QString uplinkRate() const { return _uplinkRate; }
     QString downlinkRate() const { return _downlinkRate; }
+    QString txFreq() const { return _txFreq; }
 
 signals:
     void metricsChanged();
 
 private slots:
-    void _pollBaseband();
+    void _readLogcat();
 
 private:
     static int _parseFlexInt(const QJsonValue &val, int defaultVal = 0);
     void _parseJsonPayload(const QByteArray &jsonBytes);
 
-    QNetworkAccessManager* _networkManager = nullptr;
-    QTimer *_pollTimer = nullptr;
-    QString _radioIp = QStringLiteral("192.168.144.1");
+    QProcess* _logcatProcess = nullptr;
 
     bool _connected = false;
     QString _linkStatus = QStringLiteral("Disconnected");
@@ -70,4 +66,5 @@ private:
     QString _mcs = QStringLiteral("--");
     QString _uplinkRate = QStringLiteral("0");
     QString _downlinkRate = QStringLiteral("0");
+    QString _txFreq = QStringLiteral("--");
 };

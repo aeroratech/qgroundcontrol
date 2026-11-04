@@ -1,47 +1,36 @@
 #include "TaisyncStatusManager.h"
 #include <QJsonDocument>
-#include <QNetworkRequest>
-#include <QUrl>
+#include <QDebug>
 
 TaisyncStatusManager::TaisyncStatusManager(QObject *parent)
     : QObject(parent)
-      , _networkManager(new QNetworkAccessManager(this))
-      , _pollTimer(new QTimer(this))
 {
-    connect(_pollTimer, &QTimer::timeout, this, &TaisyncStatusManager::_pollBaseband);
-    _pollTimer->start(1000); // 1 Hz polling
+    _logcatProcess = new QProcess(this);
+    connect(_logcatProcess, &QProcess::readyReadStandardOutput, this, &TaisyncStatusManager::_readLogcat);
+
+    // Spawn logcat, strip timestamps (-v raw), and filter explicitly for the OEM tag
+    _logcatProcess->start("logcat", QStringList() << "-v" << "raw" << "-s" << "TaisyncController:D");
 }
 
-void TaisyncStatusManager::setRadioIp(const QString &ip)
+void TaisyncStatusManager::_readLogcat()
 {
-    _radioIp = ip;
-}
+    while (_logcatProcess->canReadLine()) {
+        QByteArray line = _logcatProcess->readLine().trimmed();
 
-void TaisyncStatusManager::_pollBaseband()
-{
-    QUrl url(QStringLiteral("http://%1/v2/baseband.json").arg(_radioIp));
-    QNetworkRequest request(url);
+        // 1. Filter out general logcat spam
+        if (line.contains("getBaseBand onResponse")) {
 
-    // Drop the request if the radio takes more than 800ms to respond to prevent queue backlog
-    request.setTransferTimeout(800);
+            // 2. Find the strict boundaries of the JSON object
+            int startIdx = line.indexOf('{');
+            int endIdx = line.lastIndexOf('}');
 
-    QNetworkReply *reply = _networkManager->get(request);
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        reply->deleteLater();
-
-        if (reply->error() != QNetworkReply::NoError) {
-            // Force this to print so we can see the exact failure!
-            qDebug() << "Taisync HTTP Error (" << reply->error() << "):" << reply->errorString();
-
-            _connected = false;
-            _linkStatus = QStringLiteral("Offline");
-            _linkQuality = 0;
-            emit metricsChanged();
-            return;
+            // 3. Ensure both brackets exist and the string hasn't been truncated
+            if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+                QByteArray jsonBytes = line.mid(startIdx, (endIdx - startIdx) + 1);
+                _parseJsonPayload(jsonBytes);
+            }
         }
-
-        _parseJsonPayload(reply->readAll());
-    });
+    }
 }
 
 int TaisyncStatusManager::_parseFlexInt(const QJsonValue &val, int defaultVal)
@@ -90,6 +79,9 @@ void TaisyncStatusManager::_parseJsonPayload(const QByteArray &jsonBytes)
     _mcs = obj.value("MCS").toString(obj.value("mode").toString("--"));
     _uplinkRate = obj.value("uplinkDataRate").toString("0");
     _downlinkRate = obj.value("downlinkDataRate").toString("0");
+    if (obj.contains("CurTxFreq")) {
+        _txFreq = QString::number(_parseFlexInt(obj.value("CurTxFreq"))) + " MHz";
+    }
 
     emit metricsChanged();
 }

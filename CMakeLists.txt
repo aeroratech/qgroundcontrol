@@ -337,6 +337,7 @@ qt_add_qml_module(${CMAKE_PROJECT_NAME}
         QtQuick.Controls
         QtQuick.Dialogs
         QtQuick.Layouts
+        RESOURCES android/src/org/mavlink/qgroundcontrol/TaisyncReceiver.java
 )
 
 # ----------------------------------------------------------------------------

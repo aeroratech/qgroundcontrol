@@ -5,6 +5,7 @@
     android:versionName="-- %%INSERT_VERSION_NAME%% --">
 
     <!-- %%INSERT_PERMISSIONS -->
+    <uses-permission android:name="android.permission.READ_LOGS" />
 
     <!-- %%INSERT_FEATURES -->
 
