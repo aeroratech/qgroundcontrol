@@ -655,9 +655,15 @@ bool PX4FirmwarePlugin::adjustIncomingMavlinkMessage(Vehicle* vehicle, mavlink_m
 
 void PX4FirmwarePlugin::_handleAutopilotVersion(Vehicle* vehicle, mavlink_message_t* message)
 {
-    Q_UNUSED(vehicle);
+    // Cameras and other components may report AUTOPILOT_VERSION with an empty flight software version.
+    if (!vehicle || !message || message->compid != vehicle->defaultComponentId()) {
+        return;
+    }
 
     auto* instanceData = qobject_cast<PX4FirmwarePluginInstanceData*>(vehicle->firmwarePluginInstanceData());
+    if (!instanceData) {
+        return;
+    }
     if (!instanceData->versionNotified) {
         bool notifyUser = false;
         int supportedMajorVersion = 1;
