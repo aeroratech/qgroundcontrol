@@ -164,6 +164,7 @@ public:
     Q_INVOKABLE virtual void stepFocus(int direction) = 0;
     Q_INVOKABLE virtual void startFocus(int direction) = 0;
     Q_INVOKABLE virtual void stopFocus() = 0;
+    Q_INVOKABLE virtual void autoFocus() = 0;
     Q_INVOKABLE virtual void stopStream() = 0;
     Q_INVOKABLE virtual void resumeStream() = 0;
     Q_INVOKABLE virtual void startTrackingRect(QRectF rec) = 0;

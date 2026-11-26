@@ -61,6 +61,7 @@ public:
     Q_INVOKABLE void stepFocus              (int direction) override;
     Q_INVOKABLE void startFocus             (int direction) override;
     Q_INVOKABLE void stopFocus              () override;
+    Q_INVOKABLE void autoFocus() override;
     Q_INVOKABLE void stopStream             () override;
     Q_INVOKABLE void resumeStream           () override;
     Q_INVOKABLE void startTrackingRect      (QRectF rec) override;

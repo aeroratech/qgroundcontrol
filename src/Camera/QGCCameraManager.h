@@ -11,6 +11,7 @@
 
 #include "MAVLinkMessageType.h"
 #include "QmlObjectListModel.h"
+#include "RCCameraControl.h"
 
 class Vehicle;
 
@@ -121,6 +122,7 @@ protected slots:
     void _startVideoRecording();
     void _stopVideoRecording();
     void _toggleVideoRecording();
+    void _rcChannelsChanged(const QVector<int>& channels);
 
 private slots:
     void _initialConnectCompleted();
@@ -154,6 +156,8 @@ private:
     QElapsedTimer _lastZoomChange;
     QElapsedTimer _lastFocusChange;
     QElapsedTimer _lastCameraChange;
+    QElapsedTimer _rcCameraClock;
+    RCCameraControl _rcCameraControl;
     QTimer _camerasLostHeartbeatTimer;
     QMap<QString, CameraStruct*> _cameraInfoRequest;
     QHash<uint8_t, CameraInfoRequestContext*> _cameraInfoContexts;

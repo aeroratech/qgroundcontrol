@@ -1,6 +1,11 @@
 #include "QGCCameraManager.h"
+
+#include <cmath>
+#include <numbers>
+
 #include "CameraMetaData.h"
 #include "FirmwarePlugin.h"
+#include "GimbalControllerSettings.h"
 #include "Joystick.h"
 #include "JoystickManager.h"
 #include "MAVLinkLib.h"
@@ -8,13 +13,10 @@
 #include "MultiVehicleManager.h"
 #include "QGCLoggingCategory.h"
 #include "QGCVideoStreamInfo.h"
+#include "SettingsManager.h"
 #include "SimulatedCameraControl.h"
 #include "Vehicle.h"
-
-#include <cmath>
-#include "GimbalControllerSettings.h"
-#include "SettingsManager.h"
-#include <numbers>
+#include "VehicleLinkManager.h"
 
 constexpr double kPi = std::numbers::pi_v<double>;
 
@@ -86,12 +88,19 @@ QGCCameraManager::QGCCameraManager(Vehicle *vehicle)
     (void) connect(_vehicle, &Vehicle::initialConnectComplete, this, &QGCCameraManager::_initialConnectCompleted, Qt::UniqueConnection);
     (void) connect(MultiVehicleManager::instance(), &MultiVehicleManager::parameterReadyVehicleAvailableChanged, this, &QGCCameraManager::_vehicleReady);
     (void) connect(_vehicle, &Vehicle::mavlinkMessageReceived, this, &QGCCameraManager::_mavlinkMessageReceived);
+    (void) connect(MultiVehicleManager::instance(), &MultiVehicleManager::activeVehicleChanged, this,
+                   [this]() { _rcCameraControl.reset(); });
+    (void) connect(_vehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged, this,
+                   [this]() { _rcCameraControl.reset(); });
+    (void) connect(this, &QGCCameraManager::currentCameraChanged, this, [this]() { _rcCameraControl.reset(); });
+    (void) connect(this, &QGCCameraManager::camerasChanged, this, [this]() { _rcCameraControl.reset(); });
     (void) connect(&_camerasLostHeartbeatTimer, &QTimer::timeout, this, &QGCCameraManager::_checkForLostCameras);
 
     _camerasLostHeartbeatTimer.setSingleShot(false);
     _lastZoomChange.start();
     _lastFocusChange.start();
     _lastCameraChange.start();
+    _rcCameraClock.start();
     _camerasLostHeartbeatTimer.start(kHeartbeatTickMs);
 }
 
@@ -154,6 +163,18 @@ void QGCCameraManager::_vehicleReady(bool ready)
 
 void QGCCameraManager::_mavlinkMessageReceived(const mavlink_message_t &message)
 {
+    // The generic RC parser rejects noncontiguous channels without a signal.
+    // Process every RC frame here so invalid camera channels cancel pending presses.
+    if (_vehicle && message.sysid == _vehicle->id() && message.msgid == MAVLINK_MSG_ID_RC_CHANNELS) {
+        mavlink_rc_channels_t channels{};
+        mavlink_msg_rc_channels_decode(&message, &channels);
+        if (channels.chancount < 6) {
+            _rcCameraControl.reset();
+        } else {
+            _rcChannelsChanged({0, 0, 0, 0, channels.chan5_raw, channels.chan6_raw});
+        }
+        return;
+    }
     if (!_initialConnectComplete) {
         return;
     }
@@ -678,6 +699,32 @@ void QGCCameraManager::_activeJoystickChanged(Joystick *joystick)
         (void) connect(_activeJoystick, &Joystick::startVideoRecord,    this, &QGCCameraManager::_startVideoRecording, Qt::UniqueConnection);
         (void) connect(_activeJoystick, &Joystick::stopVideoRecord,     this, &QGCCameraManager::_stopVideoRecording, Qt::UniqueConnection);
         (void) connect(_activeJoystick, &Joystick::toggleVideoRecord,   this, &QGCCameraManager::_toggleVideoRecording, Qt::UniqueConnection);
+    }
+}
+
+void QGCCameraManager::_rcChannelsChanged(const QVector<int>& channels)
+{
+    if (!_vehicle || MultiVehicleManager::instance()->activeVehicle() != _vehicle ||
+        _vehicle->vehicleLinkManager()->communicationLost()) {
+        _rcCameraControl.reset();
+        return;
+    }
+    auto* camera = currentCameraInstance();
+    if (!camera) {
+        _rcCameraControl.reset();
+        return;
+    }
+
+    const auto actions =
+        _rcCameraControl.update(std::span<const int>(channels.constData(), channels.size()), _rcCameraClock.elapsed());
+    if (actions.toggleVideo) {
+        camera->toggleVideoRecording();
+    }
+    if (actions.autoFocus) {
+        camera->autoFocus();
+    }
+    if (actions.takePhoto) {
+        camera->takePhoto();
     }
 }
 

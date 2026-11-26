@@ -15,6 +15,8 @@ target_sources(${CMAKE_PROJECT_NAME}
         QGCCameraManager.h
         QGCVideoStreamInfo.cc
         QGCVideoStreamInfo.h
+        RCCameraControl.cc
+        RCCameraControl.h
         SimulatedCameraControl.cc
         SimulatedCameraControl.h
         VehicleCameraControl.cc

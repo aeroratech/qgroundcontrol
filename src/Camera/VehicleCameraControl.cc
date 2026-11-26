@@ -698,6 +698,13 @@ void VehicleCameraControl::stopZoom()
     }
 }
 
+void VehicleCameraControl::autoFocus()
+{
+    if (_vehicle && hasFocus() && !_resetting) {
+        _vehicle->sendMavCommand(_compID, MAV_CMD_SET_CAMERA_FOCUS, false, FOCUS_TYPE_AUTO);
+    }
+}
+
 void VehicleCameraControl::stepFocus(int direction)
 {
     qCDebug(VehicleCameraControlLog) << "Camera step focus" << direction;
